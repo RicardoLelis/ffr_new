@@ -11,6 +11,7 @@ nose2 = "*"
 flask-sqlalchemy = "*"
 psycopg2 = "*"
 flask-wtf = "*"
+flask-login = "*"
 
 [requires]
 python_version = "3.6"

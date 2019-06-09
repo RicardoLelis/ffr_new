@@ -8,8 +8,9 @@
 from flask import render_template, Blueprint, request, redirect, url_for, flash
 from project import db
 from project.models import User
-from .forms import RegistrationForm
+from .forms import RegistrationForm, LoginForm
 from sqlalchemy.exc import IntegrityError
+from flask_login import login_user, current_user, login_required, logout_user
 
 ################
 #### config ####
@@ -22,9 +23,34 @@ users_blueprint  = Blueprint('users', __name__)
 #### routes ####
 ################
 
-@users_blueprint.route('/login')
+@users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
+    form = LoginForm(request.form)
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            user =  User.query.filter_by(email=form.email.data).first()
+            if user is not None and  user.is_correct_password(form.password.data):
+                user.authenticated = True
+                db.session.add(user)
+                db.session.commit()
+                login_user(user)
+                flash('Thanks for logging in, {}'.format(current_user.email))
+                return redirect(url_for('recipes.index'))
+            else:
+                flash('ERROR! Incorrect login credentials.', 'error')
+    return render_template('login.html', form=form)
+
+
+@users_blueprint.route('/logout')
+@login_required
+def logout():
+    user = current_user
+    user.authenticated = False
+    db.session.add(user)
+    db.session.commit()
+    logout_user()
+    flash('Goodbye!', 'info')
+    return redirect(url_for('users.login'))
 
 
 @users_blueprint.route('/register', methods=['GET', 'POST'])

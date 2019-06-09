@@ -37,6 +37,13 @@ class UserTests(unittest.TestCase):
             data=dict(email=email,  password=password, confirm=confirm),
             follow_redirects=True
         )
+    
+    def login(self, email, password):
+        return self.app.post(
+            '/login',
+            data=dict(email=email, password=password),
+            follow_redirects=True
+        )
 
     # Executed after each test
     def tearDown(self):
@@ -47,10 +54,11 @@ class UserTests(unittest.TestCase):
     #### tests ####
     ###############
 
-    def test_main_page(self):
-        response = self.app.get('/login', follow_redirects=True)
-        self.assertIn(b'Future site for logging into Lelis Family Recipe App', response.data)
-    
+    # def test_main_page(self):
+    #     response = self.app.get('/', follow_redirects=True)
+    #     self.assertIn(b'Lelis Family Recipes', response.data)
+    #     self.assertIn(b'Register', response.data)
+    #     self.assertIn(b'Log In', response.data)
 
     def test_user_registration_form_displays(self):
         response = self.app.get('/register')
@@ -59,7 +67,7 @@ class UserTests(unittest.TestCase):
     
     def test_valid_user_registration(self):
         self.app.get('/register', follow_redirects=True)
-        response =  self.register('patkennedy79@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
+        response = self.register('patkennedy79@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
         self.assertIn(b'Thanks for registering!', response.data)
     
     def test_duplicate_email_user_registration_error(self):
@@ -73,4 +81,33 @@ class UserTests(unittest.TestCase):
         self.app.get('/register', follow_redirects=True)
         response =  self.register('patkennedy79@gmail.com', 'FlaskIsAwesome', '')
         self.assertIn(b'This field is required', response.data)
-
+    
+    def test_login_form_displays(self):
+        response = self.app.get('/login')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Log In', response.data)
+    
+    def test_valid_login(self):
+        self.app.get('/register', follow_redirects=True)
+        self.register('patkennedy79@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
+        self.app.get('/login', follow_redirects=True)
+        response = self.login('patkennedy79@gmail.com', 'FlaskIsAwesome')
+        self.assertIn(b'Welcome, patkennedy79@gmail.com', response.data)
+    
+    def test_login_without_registration(self):
+        self.app.get('/login', follow_redirects=True)
+        response = self.login('patkennedy79@gmail.com', 'FlaskIsAwesome')
+        self.assertIn(b'ERROR! Incorrect login credentials.', response.data)
+    
+    def test_valid_logout(self):
+        self.app.get('/register', follow_redirects=True)
+        self.register('patkennedy79@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
+        self.app.get('/login', follow_redirects=True)
+        self.login('patkennedy79@gmail.com', 'FlaskIsAwesome')
+        response = self.app.get('/logout', follow_redirects=True)
+        self.assertIn(b'Goodbye!', response.data)
+    
+    def test_invalid_logout_within_being_logged_in(self):
+        response  = self.app.get('/logout', follow_redirects=True)
+        self.assertIn(b'Log In', response.data)
+        
