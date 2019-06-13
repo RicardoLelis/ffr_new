@@ -14,6 +14,7 @@ flask-wtf = "*"
 flask-login = "*"
 flask-bcrypt = "*"
 sqlalchemy = "==0.9"
+flask-mail = "*"
 
 [requires]
 python_version = "3.6"

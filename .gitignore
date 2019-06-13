@@ -11,4 +11,4 @@ Pipfile
 Pipfile*
 
 #  Instance Folder - used for configuration parameters
-/instance
+instance/

@@ -29,12 +29,13 @@ class User(db.Model):
         self.email = email
         self.password = plaintext_password
         self.authenticated = False
- 
+    
+    #  This password hashing Only works with  SQLAlchemy 0.9
     @hybrid_property
     def password(self):
         return self._password
  
-    @password.setter
+    @password.setter 
     def set_password(self, plaintext_password):
         self._password = bcrypt.generate_password_hash(plaintext_password)
  
