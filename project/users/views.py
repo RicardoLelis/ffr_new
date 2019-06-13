@@ -38,19 +38,17 @@ def send_email(subject, recipients, text_body, html_body):
 
 def send_confirmation_email(user_email):
     confirm_serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-
+ 
     confirm_url = url_for(
         'users.confirm_email',
         token=confirm_serializer.dumps(user_email, salt='email-confirmation-salt'),
-        _external=True
-    )
-
+        _external=True)
+ 
     html = render_template(
         'email_confirmation.html',
-        confirm_url=confirm_url
-    )
-
-    send_email('Confirm Your Email Address', [user_email], 'confirmation_email:', html)
+        confirm_url=confirm_url)
+ 
+    send_email('Confirm Your Email Address', [user_email], '',html)
 
 ################
 #### routes ####
@@ -93,21 +91,12 @@ def register():
         if form.validate_on_submit():
             try:
                 new_user = User(form.email.data, form.password.data)
-                new_user.authenticated =  True
+                new_user.authenticated = True
                 db.session.add(new_user)
                 db.session.commit()
-
+ 
                 send_confirmation_email(new_user.email)
-                # send_email('Registration',
-                #             ['ricardo.lelis3@gmail.com'],
-                #             'Thanks for registering with Lelis Family Recipes!',
-                #             '<h3>Thanks for registering with Lelis Family Recipes!</h3>')
-                # msg = Message(subject='Registration',
-                #               body='Thanks for registering with Lelis Family Recipes!',
-                #               recipients=['ricardo.lelis3@gmail.com'])
-                # mail.send(msg)
-
-                flash('Thanks for registering! Please check your email to confirm your email address.', 'success')
+                flash('Thanks for registering!  Please check your email to confirm your email address.', 'success')
                 return redirect(url_for('recipes.index'))
             except IntegrityError:
                 db.session.rollback()
@@ -123,17 +112,17 @@ def confirm_email(token):
     except:
         flash('The confirmation link is invalid or has expired.', 'error')
         return redirect(url_for('users.login'))
-    
+ 
     user = User.query.filter_by(email=email).first()
-
+ 
     if user.email_confirmed:
         flash('Account already confirmed. Please login.', 'info')
     else:
         user.email_confirmed = True
-        user.email_confirmation_on = datetime.now()
+        user.email_confirmed_on = datetime.now()
         db.session.add(user)
         db.session.commit()
         flash('Thank you for confirming your email address!')
-    
+ 
     return redirect(url_for('recipes.index'))
 
