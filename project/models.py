@@ -1,6 +1,6 @@
 from project import db, bcrypt
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-
+from datetime import datetime
 
 class Recipe(db.Model):
 
@@ -24,11 +24,17 @@ class User(db.Model):
     email = db.Column(db.String, unique=True, nullable=False)
     _password = db.Column(db.Binary(60), nullable=False)
     authenticated = db.Column(db.Boolean, default=False)
+    email_confirmation_sent_on = db.Column(db.DateTime, nullable=True)
+    email_confirmed = db.Column(db.Boolean, nullable=True, default=False)
+    email_confirmed_on = db.Column(db.DateTime, nullable=True)
  
-    def __init__(self, email, plaintext_password):
+    def __init__(self, email, plaintext_password, email_confirmation_sent_on=None):
         self.email = email
         self.password = plaintext_password
         self.authenticated = False
+        self.email_confirmation_sent_on = email_confirmation_sent_on
+        self.email_confirmed  = False
+        self.email_confirmed_on = None
     
     #  This password hashing Only works with  SQLAlchemy 0.9
     @hybrid_property
