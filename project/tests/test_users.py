@@ -152,11 +152,11 @@ class UserTests(unittest.TestCase):
     def test_change_email_address(self):
         self.app.get('/register', follow_redirects=True)
         self.register('ricardo.lelis3@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
-        self.app.post('/email_change', data=dict(email='patkennedy79@blaa.com'), follow_redirects=True)
+        self.app.post('/email_change', data=dict(email='ricardolelis3@sapo.pt'), follow_redirects=True)
         response = self.app.get('/user_profile')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Email Address', response.data)
-        self.assertIn(b'patkennedy79@blaa.com', response.data)
+        self.assertIn(b'ricardolelis3@sapo.pt', response.data)
         self.assertNotIn(b'ricardo.lelis3@gmail.com', response.data)
     
     def test_change_email_address_with_existing_email(self):
