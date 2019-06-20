@@ -5,7 +5,7 @@
 #### imports ####
 #################
 from threading import Thread
-from flask import render_template, Blueprint, request, redirect, url_for, flash
+from flask import render_template, Blueprint, request, redirect, url_for, flash, abort
 from project import app, db, mail
 from project.models import User
 from .forms import RegistrationForm, LoginForm, EmailForm, PasswordForm
@@ -247,5 +247,15 @@ def resend_email_confirmation():
         flash('Error! Unable to send email confirmation to confirm your email address.', 'error')
     
     return redirect(url_for('users.user_profile'))
+
+@users_blueprint.route('/admin_view_users')
+@login_required
+def admin_view_users():
+    if current_user.role != 'admin':
+        abort(403)
+    else:
+        users = User.query.order_by(User.id).all()
+        return render_template('admin_view_users.html', users=users)
+    return redirect(url_for('index'))
 
 

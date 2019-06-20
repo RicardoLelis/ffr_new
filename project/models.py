@@ -30,9 +30,11 @@ class User(db.Model):
     registered_on = db.Column(db.DateTime, nullable=True)
     last_logged_in = db.Column(db.DateTime, nullable=True)
     current_logged_in = db.Column(db.DateTime, nullable=True)
+    role = db.Column(db.String, default='user')
+
 
  
-    def __init__(self, email, plaintext_password, email_confirmation_sent_on=None):
+    def __init__(self, email, plaintext_password, email_confirmation_sent_on=None, role='user'):
         self.email = email
         self.password = plaintext_password
         self.authenticated = False
@@ -42,6 +44,8 @@ class User(db.Model):
         self.registered_on = datetime.now()
         self.last_logged_in = None
         self.current_logged_in = datetime.now()
+        self.role = role
+
     
     #  This password hashing Only works with  SQLAlchemy 0.9
     @hybrid_property

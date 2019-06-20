@@ -46,6 +46,12 @@ class UserTests(unittest.TestCase):
             data=dict(email=email, password=password),
             follow_redirects=True
         )
+    
+    def create_admin_user(self):
+        new_user = User(email='admin@lelisfamilyrecipes.com', plaintext_password='AdMiNpAsSwOrD', role='admin')
+        db.session.add(new_user)
+        db.session.commit()
+
 
     # Executed after each test
     def tearDown(self):
@@ -180,14 +186,14 @@ class UserTests(unittest.TestCase):
     
     def test_change_password_page(self):
         self.app.get('/register', follow_redirects=True)
-        self.register('patkennedy79@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
+        self.register('ricardo.lelis3@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
         response = self.app.get('/password_change')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Password Change', response.data)
  
     def test_change_password(self):
         self.app.get('/register', follow_redirects=True)
-        self.register('patkennedy79@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
+        self.register('ricardo.lelis3@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
         response = self.app.post('/password_change', data=dict(password='MyNewPassword1234'), follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Password has been updated!', response.data)
@@ -202,4 +208,29 @@ class UserTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Log In', response.data)
         self.assertIn(b'Need an account?', response.data)
+    
+    def test_admin_site_valid_access(self):
+        self.create_admin_user()
+        self.app.get('/login', follow_redirects=True)
+        response = self.login('admin@lelisfamilyrecipes.com', 'AdMiNpAsSwOrD')
+        self.assertIn(b'admin@lelisfamilyrecipes.com', response.data)
+        self.assertIn(b'View Users (Admin)', response.data)
+        response = self.app.get('/admin_view_users')
+        self.assertIn(b'Administrative Page: List of Users', response.data)
+ 
+    def test_admin_site_invalid_access(self):
+        response = self.app.get('/admin_view_users')
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(b'You should be redirected automatically to target URL:', response.data)
+        self.assertIn(b'/login?next=%2Fadmin_view_users', response.data)
+        self.app.get('/register', follow_redirects=True)
+        self.register('ricardo.lelis3@gmail.com', 'FlaskIsAwesome', 'FlaskIsAwesome')
+        self.app.get('/login', follow_redirects=True)
+        response = self.login('ricardo.lelis3@gmail.com', 'FlaskIsAwesome')
+        self.assertIn(b'ricardo.lelis3@gmail.com', response.data)
+        self.assertNotIn(b'View Users (Admin)', response.data)
+        response = self.app.get('/admin_view_users')
+        self.assertEqual(response.status_code, 403)
+        self.assertIn(b'Forbidden', response.data)
+        self.assertIn(b'You don\'t have the permission to access the requested resource. It is either read-protected or not readable by the server.', response.data)
         
