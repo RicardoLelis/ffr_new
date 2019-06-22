@@ -26,7 +26,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="{{ url_for('recipes.index') }}">Lelis Family Recipes</a>
+          <a class="navbar-brand" href="{{ url_for('recipes.public_recipes') }}">Lelis Family Recipes</a>
         </div>
  
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -37,7 +37,7 @@
             <li><a href="#">Dinner Recipes</a></li>
             <li><a href="#">Dessert Recipes</a></li>
             {% if current_user.is_authenticated %}
-            <li><a href="{{ url_for('recipes.index') }}">Public Recipes</a></li>
+            <li><a href="{{ url_for('recipes.user_recipes') }}">My Recipes</a></li>
             <li><a href="{{ url_for('recipes.add_recipe') }}">Add Recipe</a></li>
             <li><a href="{{ url_for('users.logout') }}">Log Out</a></li>
               {% if current_user.role == "admin" %}

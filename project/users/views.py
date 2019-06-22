@@ -7,7 +7,7 @@
 from threading import Thread
 from flask import render_template, Blueprint, request, redirect, url_for, flash, abort
 from project import app, db, mail
-from project.models import User
+from project.models import User, Recipe
 from .forms import RegistrationForm, LoginForm, EmailForm, PasswordForm
 from sqlalchemy.exc import IntegrityError
 from flask_login import login_user, current_user, login_required, logout_user
@@ -20,6 +20,7 @@ from datetime import datetime
 ################
 
 users_blueprint  = Blueprint('users', __name__)
+recipes_blueprint  = Blueprint('recipes', __name__)
 
 #################
 #### helpers ####
@@ -82,7 +83,7 @@ def login():
                 db.session.commit()
                 login_user(user)
                 flash('Thanks for logging in, {}'.format(current_user.email))
-                return redirect(url_for('recipes.index'))
+                return redirect(url_for('recipes.public_recipes'))
             else:
                 flash('ERROR! Incorrect login credentials.', 'error')
     return render_template('login.html', form=form)
@@ -115,7 +116,7 @@ def register():
  
                 send_confirmation_email(new_user.email)
                 flash('Thanks for registering!  Please check your email to confirm your email address.', 'success')
-                return redirect(url_for('recipes.index'))
+                return redirect(url_for('recipes.public_recipes'))
             except IntegrityError:
                 db.session.rollback()
                 flash('ERROR! Email ({}) already exists.'.format(form.email.data), 'error')
@@ -142,7 +143,7 @@ def confirm_email(token):
         db.session.commit()
         flash('Thank you for confirming your email address!', 'success')
  
-    return redirect(url_for('recipes.index'))
+    return redirect(url_for('recipes.public_recipes'))
 
 @users_blueprint.route('/reset', methods=["GET", "POST"])
 def reset():
@@ -256,7 +257,8 @@ def admin_view_users():
     else:
         users = User.query.order_by(User.id).all()
         return render_template('admin_view_users.html', users=users)
-    return redirect(url_for('index'))
+    return redirect(url_for('public_recipes'))
+
 
 ############################
 #### custom error pages ####

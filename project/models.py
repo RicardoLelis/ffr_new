@@ -9,10 +9,16 @@ class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     recipe_title = db.Column(db.String, nullable=False)
     recipe_description = db.Column(db.String, nullable=False)
+    is_public = db.Column(db.Boolean, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    def __init__(self, title, description):
+
+
+    def __init__(self, title, description, user_id, is_public):
         self.recipe_title = title
         self.recipe_description = description
+        self.is_public = is_public
+        self.user_id = user_id
     
     def __repr__(self):
         return '<title {}'.format(self.name)
@@ -31,6 +37,7 @@ class User(db.Model):
     last_logged_in = db.Column(db.DateTime, nullable=True)
     current_logged_in = db.Column(db.DateTime, nullable=True)
     role = db.Column(db.String, default='user')
+    recipes = db.relationship('Recipe', backref='user', lazy='dynamic')
 
 
  
