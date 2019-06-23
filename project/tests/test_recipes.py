@@ -108,26 +108,13 @@ class RecipesTests(unittest.TestCase):
     ###############
     #### tests ####
     ###############
- 
-    def test_main_page(self):
-        self.register_user()
-        self.add_recipes()
-        self.logout_user()
-        response = self.app.get('/', follow_redirects=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Kennedy Family Recipes', response.data)
-        self.assertIn(b'Register', response.data)
-        self.assertIn(b'Hamburgers', response.data)
-        self.assertIn(b'Mediterranean Chicken', response.data)
-        self.assertNotIn(b'Tacos', response.data)
-        self.assertNotIn(b'Homemade Pizza', response.data)
-    
+
     def test_user_recipes_page(self):
         self.register_user()
         self.add_recipes()
         response = self.app.get('/recipes', follow_redirects=True)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Kennedy Family Recipes', response.data)
+        self.assertIn(b'Lelis Family Recipes', response.data)
         self.assertIn(b'Hamburgers', response.data)
         self.assertIn(b'Mediterranean Chicken', response.data)
         self.assertIn(b'Tacos', response.data)
@@ -145,24 +132,32 @@ class RecipesTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Add a New Recipe', response.data)
     
-    def test_add_recipe(self):
+    def test_recipe_detail_public_recipe(self):
         self.register_user()
-        response = self.app.post(
-            '/add',
-            data=dict(recipe_title='Hamburgers2',
-                    recipe_description='Delicious hamburger with pretzel rolls'),
-            follow_redirects=True)
-        self.assertIn(b'New recipe, Hamburgers2, added!', response.data)
+        self.add_recipes()
+        self.logout_user()
+        response = self.app.get('/recipe/1', follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Hamburgers', response.data)
+        self.assertIn(b'Public', response.data)
+        self.assertIn(b'ricardo.lelis3@gmail.com', response.data)
+ 
+    def test_recipe_detail_private_recipe(self):
+        self.register_user()
+        self.add_recipes()
+        response = self.app.get('/recipe/3', follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Tacos', response.data)
+        self.assertIn(b'Private', response.data)
+        self.assertIn(b'ricardo.lelis3@gmail.com', response.data)
     
-    def test_add_invalid_recipe(self):
+    def test_recipe_detail_private_recipe_invalid_user(self):
         self.register_user()
-        response = self.app.post(
-            '/add',
-            data=dict(recipe_title='',
-                    recipe_description='Delicious hamburger with pretzel rolls'),
-            follow_redirects=True)
-        self.assertIn(b'ERROR! Recipe was not added.', response.data)
-        self.assertIn(b'This field is required.', response.data)
+        self.add_recipes()
+        self.logout_user()
+        response = self.app.get('/recipe/3', follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Error! Incorrect permissions to access this recipe.', response.data)
 
 if __name__ == "__main__":
     unittest.main()
