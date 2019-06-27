@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
+from flask_uploads import UploadSet, IMAGES, configure_uploads
 
 ################
 #### config ####
@@ -22,6 +23,10 @@ mail = Mail(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'users.login'
+
+# Configure  the image uploading via flask-Uploads
+images = UploadSet('images', IMAGES)
+configure_uploads(app, images)
 
 from  project.models import User
 

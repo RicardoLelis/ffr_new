@@ -6,7 +6,7 @@
 
 from flask import render_template, Blueprint, request, redirect, url_for, flash
 from flask_login import current_user, login_required
-from project import db
+from project import db, images
 from project.models import Recipe, User
 from .forms import AddRecipeForm
 
@@ -46,10 +46,15 @@ def user_recipes():
 
 @recipes_blueprint.route('/add', methods=['GET', 'POST'])
 def add_recipe():
+    # Cannot pass in 'request.form' to AddRecipeForm constructor, as this will cause 'request.files' to not be
+    # sent to the form.  This will cause AddRecipeForm to not see the file data.
+    # Flask-WTF handles passing form data to the form, so not parameters need to be included.
     form = AddRecipeForm(request.form)
     if request.method == 'POST':
         if form.validate_on_submit():
-            new_recipe = Recipe(form.recipe_title.data, form.recipe_description.data, current_user.id, True)
+            filename = images.save(request.files['recipe_image'])
+            url = images.url(filename)
+            new_recipe = Recipe(form.recipe_title.data, form.recipe_description.data, current_user.id, True, filename, url)
             db.session.add(new_recipe)
             db.session.commit()
             flash("New Recipe, {}, added!".format(new_recipe.recipe_title), 'success')

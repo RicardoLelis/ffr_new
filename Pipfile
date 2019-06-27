@@ -16,6 +16,7 @@ flask-bcrypt = "*"
 sqlalchemy = "==0.9"
 flask-mail = "*"
 itsdangerous = "*"
+flask-uploads = "*"
 
 [requires]
 python_version = "3.6"
